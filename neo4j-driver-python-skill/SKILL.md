@@ -150,10 +150,10 @@ import neo4j
 df      = driver.execute_query("MATCH (p:Person) RETURN p.name, p.age", database_="neo4j",
                                 result_transformer_=neo4j.Result.to_df)
 record  = driver.execute_query("MATCH (p:Person {name:$n}) RETURN p", n="Alice", database_="neo4j",
-                                result_transformer_=neo4j.Result.single)   # raises if 0 or 2+ results
+                                result_transformer_=neo4j.Result.single)   # None if 0 rows; first record + warning if 2+
 ```
 
-`Result.single()` raises `ResultNotSingleError` on **zero** results (not just 2+). Use `single(strict=False)` for None-on-empty.
+`Result.single()` defaults to `strict=False`: **zero** rows → `None`, **2+** rows → the first record plus a warning (no exception). Only `single(strict=True)` raises `ResultNotSingleError` (on 0 or 2+). Use `strict=True` when exactly one row must exist, e.g. `result_transformer_=lambda r: r.single(strict=True)`; otherwise check for `None`.
 
 ---
 
@@ -395,7 +395,7 @@ Full performance patterns → [references/performance.md](references/performance
 | Leaked sessions | `with driver.session(...) as session` always |
 | `json.dumps(record.data())` with node/temporal | Project scalars in Cypher or convert explicitly |
 | `result["name"]` on `EagerResult` | Index `result.records[0]["name"]` or unpack `records, _, _ = ...` |
-| `Result.single()` returns None for 0 results | It raises — use `single(strict=False)` |
+| Assuming `Result.single()` raises on 0 or 2+ rows | Default `strict=False` returns `None` (0 rows) or the first record with a warning (2+). Use `single(strict=True)` to raise |
 | `@unit_of_work` on lambda | Use named function |
 | `Neo4jError` caught before `ConstraintError` | Catch `ConstraintError` first — it's a subclass |
 | `neo4j-driver` package name | Package is `neo4j` since v6; `neo4j-driver` deprecated |
