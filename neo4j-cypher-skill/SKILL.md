@@ -407,7 +407,7 @@ Full anti-patterns → [references/performance.md](references/performance.md)
 - Long-running query progress [2026.03]: `SHOW TRANSACTIONS YIELD currentQuery, status, currentQueryProgress`
 - DateTime mismatch: `ZONED DATETIME >= date(...)` → 0 rows; use `datetime()` or `.year`
 - `Z` suffix ≠ UTC timezone: ISO strings with `Z` are stored as a UTC-offset, not the UTC zone — range queries across `Z` and `UTC` stored values return 0 rows. Coerce on write: `datetime({datetime: datetime($isoStr), timezone: 'UTC'})`
-- Duration: `duration.between(d1,d2).days` is the days *component* (Jan 1 → Mar 15 gives 14, after 2 months), not the total. For total days use `duration.inDays(d1,d2).days` (73); likewise `duration.inMonths`, `duration.inSeconds`. `.inDays` is not an accessor on a duration value
+- Duration: `duration.between(d1,d2).days` = days *component* (Jan 1 → Mar 15: 14), not total. Total days: `duration.inDays(d1,d2).days` (73); same for `inMonths`, `inSeconds`. `.inDays` is not an accessor on duration values
 - `Cannot merge node using null property value`: MERGE key resolved to null — validate params first
 - `IndexNotFoundError`: `SHOW INDEXES YIELD name, state WHERE state <> 'ONLINE'`
 
