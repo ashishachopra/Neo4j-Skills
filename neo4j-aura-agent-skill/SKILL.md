@@ -167,7 +167,7 @@ Tool selection:
 | Semantic text search | `similaritySearch` |
 | Aggregation, counting, open-ended | `text2cypher` |
 
-**CypherTemplate parameters**: for each parameter, read `aura_data_type` from `schema.json → node_props` or `rel_props` and use it as `data_type`. If the property has `low_cardinality: true`, the parameter `description` MUST list the valid values — copy them from the `values` array in `schema.json`. Example: `"description": "Agreement type to filter by. Valid values: \"Distributor Agreement\", \"License Agreement\", \"NDA\""`. Properties with `has_fulltext_index: true` are especially likely to be filter targets and must include valid values when low cardinality.
+**CypherTemplate parameters**: for each parameter, read `aura_data_type` from `schema.json → node_props` or `rel_props` and use it as `data_type`. If the property has `low_cardinality: true`, the parameter `description` should list the valid values — copy them from the `values` array in `schema.json`. Example: `"description": "Agreement type to filter by. Valid values: \"Distributor Agreement\", \"License Agreement\", \"NDA\""`. Properties with `has_fulltext_index: true` are especially likely to be filter targets and should include valid values when low cardinality.
 
 **SimilaritySearch configuration** — take each value from the request if stated, from the index where discoverable (`dimension`), and ask only for what is still missing before drafting the tool config:
 
