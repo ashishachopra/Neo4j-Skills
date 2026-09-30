@@ -63,13 +63,13 @@ MCP tool map:
 2. Nodes = entities (nouns) with identity; rels = connections (verbs) with direction
 3. Labels PascalCase; rel types SCREAMING_SNAKE_CASE; properties camelCase
 4. Every node type used in MERGE has a uniqueness constraint on its key property
-5. Add property type constraints (`REQUIRE n.prop IS :: STRING`) where the type is known — catches bad writes early. **Enterprise only**: on Community, rely on uniqueness constraints and validate types in the application
+5. Add property type constraints (`REQUIRE n.prop IS :: STRING`) where type known — catches bad writes early. **Enterprise only**; Community: use uniqueness constraints, validate types in app
 6. No generic labels (`:Entity`, `:Node`, `:Thing`); no generic rel types (`:RELATED_TO`, `:HAS`)
 7. Security labels (used for row-level access control) should start with a common prefix (e.g. `Sec`) so application code can reliably filter them out of the domain schema
 8. Rel direction encodes semantic meaning — not arbitrary
 9. Inspect schema before proposing any change on an existing database
 10. All constraint/index DDL uses `IF NOT EXISTS` — safe to rerun
-11. **On Neo4j 2026.06+ (Enterprise/Aura, GA):** declare the full model in one block with `ALTER CURRENT GRAPH TYPE SET { … }`, extend it with `ALTER CURRENT GRAPH TYPE ADD { … }`, instead of individual `CREATE CONSTRAINT` statements — details are in the `neo4j-cypher-skill` skill (GRAPH TYPE reference). Not available on Community (`ALTER CURRENT GRAPH TYPE SET` returns "not supported in community edition"): use the individual constraints there. On 2026.02–2026.05 the same syntax is preview.
+11. **On Neo4j 2026.06+ (Enterprise/Aura, GA):** declare the full model in one block with `ALTER CURRENT GRAPH TYPE SET { … }`, extend it with `ALTER CURRENT GRAPH TYPE ADD { … }`, instead of individual `CREATE CONSTRAINT` statements — details in `neo4j-cypher-skill` (GRAPH TYPE reference). Not on Community (`ALTER CURRENT GRAPH TYPE SET` → "not supported in community edition"): use individual constraints. On 2026.02–2026.05 syntax is preview.
 
 ---
 
@@ -98,7 +98,7 @@ MCP tool map:
 
 Rule: adding a label is cheap; scanning all `:Label` nodes is fast. Never model high-cardinality values as labels.
 
-A low-cardinality state such as `status` can go either way: use a label (`:Active`) when it is a stable category you traverse or filter by; use a property when it changes often or is only returned with the node. Either way, don't model it as a `(:Status)` node.
+Low-cardinality state such as `status`: label (`:Active`) if stable category used for traversal/filter; property if changes often or only returned with node. Never a `(:Status)` node.
 
 ---
 
@@ -225,7 +225,7 @@ CREATE CONSTRAINT person_born_integer IF NOT EXISTS
 CREATE CONSTRAINT movie_tmdbid_key IF NOT EXISTS
   FOR (m:Movie) REQUIRE m.tmdbId IS NODE KEY;
 
-// 4b. Community alternative to NODE KEY — composite uniqueness (does not enforce existence)
+// 4b. Community alternative to NODE KEY — composite uniqueness (existence not enforced)
 CREATE CONSTRAINT movie_title_released_unique IF NOT EXISTS
   FOR (m:Movie) REQUIRE (m.title, m.released) IS UNIQUE;
 
@@ -233,11 +233,11 @@ CREATE CONSTRAINT movie_title_released_unique IF NOT EXISTS
 CREATE INDEX person_name_idx IF NOT EXISTS
   FOR (p:Person) ON (p.name);
 
-// 6. Fulltext index — relevance-ranked free text search via db.index.fulltext.queryNodes / SEARCH (Lucene syntax incl. wildcards like `An*`); the planner does not use it for CONTAINS / STARTS WITH predicates
+// 6. Fulltext index — ranked free-text search via `db.index.fulltext.queryNodes` / `SEARCH` (Lucene syntax, wildcards like `An*`); not used for CONTAINS / STARTS WITH predicates
 CREATE FULLTEXT INDEX person_fulltext IF NOT EXISTS
   FOR (n:Person) ON EACH [n.name, n.bio];
 
-// 6b. Text index — serves CONTAINS / STARTS WITH / ENDS WITH predicates (with a range index also present, the planner uses the range index for STARTS WITH)
+// 6b. Text index — serves CONTAINS / STARTS WITH / ENDS WITH (range index preferred for STARTS WITH when present)
 CREATE TEXT INDEX person_bio_text IF NOT EXISTS
   FOR (n:Person) ON (n.bio);
 
@@ -272,7 +272,7 @@ Rules:
 - Parent document: metadata only (title, url, createdAt)
 - Vector index on `c.embedding` only
 - Chunk size 200–500 tokens with 20% overlap is production default [field]
-- For chunked documents, do NOT put the embedding on `:Document` — makes the node too large and pollutes traversal
+- Chunked docs: do NOT put embedding on `:Document` — makes node too large, pollutes traversal
 
 ---
 
