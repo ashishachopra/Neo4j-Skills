@@ -149,7 +149,7 @@ Read `schema.json` before Step 5.
 
 Before designing tools, read [references/authoring-guide.md](references/authoring-guide.md).
 
-**Answer these from the user's request and the schema where you can; ask only what is still unclear. Do NOT guess tool types or parameters.** If the request already states the use cases, tools, or embedding details, use them and move on.
+**Answer these from the user's request and the schema where you can, and ask what is still unclear. Do NOT guess tool types or parameters.** If the request already states the use cases, tools, or embedding details, use them and move on.
 
 1. "What questions should this agent answer?"
 2. "Which nodes or relationships matter most?" — match against `schema.json → node_props`
@@ -169,7 +169,7 @@ Tool selection:
 
 **CypherTemplate parameters**: for each parameter, read `aura_data_type` from `schema.json → node_props` or `rel_props` and use it as `data_type`. If the property has `low_cardinality: true`, the parameter `description` should list the valid values — copy them from the `values` array in `schema.json`. Example: `"description": "Agreement type to filter by. Valid values: \"Distributor Agreement\", \"License Agreement\", \"NDA\""`. Properties with `has_fulltext_index: true` are especially likely to be filter targets and should include valid values when low cardinality.
 
-**SimilaritySearch configuration** — take each value from the request if stated, from the index where discoverable (`dimension`), and ask only for what is still missing before drafting the tool config:
+**SimilaritySearch configuration** — take each value from the request if stated, from the index where discoverable (`dimension`), and ask for what is still missing before drafting the tool config:
 
 | Field | What to ask | Source |
 |---|---|---|
