@@ -149,7 +149,7 @@ Read `schema.json` before Step 5.
 
 Before designing tools, read [references/authoring-guide.md](references/authoring-guide.md).
 
-**Ask the user these questions. Do NOT guess tool types or parameters.**
+**Answer these from the user's request and the schema where you can; ask only what is still unclear. Do NOT guess tool types or parameters.** If the request already states the use cases, tools, or embedding details, use them and move on.
 
 1. "What questions should this agent answer?"
 2. "Which nodes or relationships matter most?" — match against `schema.json → node_props`
@@ -157,7 +157,7 @@ Before designing tools, read [references/authoring-guide.md](references/authorin
 4. "Any counting, grouping, or date-range questions?" → Text2Cypher
 5. "Search for semantically similar text?" → check `schema.json → metadata → vector_index`
    - No VECTOR index found: inform user; skip SimilaritySearch; delegate to `neo4j-vector-index-skill` first
-   - VECTOR index found: ask the user — **"Which embedding provider and model should be used? What output dimension?"** See supported models in `references/REFERENCE.md → Embedding Provider Options`. Do NOT guess or default.
+   - VECTOR index found: use provider and model from the request if given; otherwise ask — **"Which embedding provider and model should be used?"** See supported models in `references/REFERENCE.md → Embedding Provider Options`. Take the dimension from the index (`vector.dimensions`). Do NOT guess a provider or model that neither the request nor the index implies.
 
 Tool selection:
 
@@ -169,19 +169,19 @@ Tool selection:
 
 **CypherTemplate parameters**: for each parameter, read `aura_data_type` from `schema.json → node_props` or `rel_props` and use it as `data_type`. If the property has `low_cardinality: true`, the parameter `description` MUST list the valid values — copy them from the `values` array in `schema.json`. Example: `"description": "Agreement type to filter by. Valid values: \"Distributor Agreement\", \"License Agreement\", \"NDA\""`. Properties with `has_fulltext_index: true` are especially likely to be filter targets and must include valid values when low cardinality.
 
-**SimilaritySearch configuration** — ask the user for all three before drafting the tool config:
+**SimilaritySearch configuration** — take each value from the request if stated, from the index where discoverable (`dimension`), and ask only for what is still missing before drafting the tool config:
 
 | Field | What to ask | Source |
 |---|---|---|
-| `provider` | "openai" or "vertexai"? | User confirms |
-| `model` | Which model? | User picks from `references/REFERENCE.md → Embedding Provider Options` |
+| `provider` | "openai" or "vertexai"? | Request, else user confirms |
+| `model` | Which model? | Request, else user picks from `references/REFERENCE.md → Embedding Provider Options` |
 | `dimension` | What output dimension? | Required if model is configurable (see table); fixed models use the table value |
 
 `index`: use `name` from `schema.json → metadata → vector_index` where `state = ONLINE`. `dimension` must match `vector.dimensions` in the same index entry.
 
 **Signals inventory**: for each label or relationship that appears in a tool or the user's stated questions, write a signal block in the system prompt. See `references/authoring-guide.md → Signals inventory` for the template and rules.
 
-Draft config JSON → show to user for review → confirm → proceed to Step 6.
+Draft config JSON → show to user for review → confirm → proceed to Step 6. If the user asked you to go ahead without review, or the request already specifies the full config, state the config and proceed.
 
 ---
 
@@ -204,7 +204,7 @@ Minimum required config:
 }
 ```
 
-**Show config to user and confirm before running:**
+**Show config to user and confirm before running (skip the pause if the user already asked you to create the agent with these details):**
 ```bash
 uv run python3 scripts/manage_agent.py create --config agent-config.json
 ```

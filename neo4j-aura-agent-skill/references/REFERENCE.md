@@ -116,7 +116,7 @@ All fields optional: `name`, `description`, `system_prompt`, `dbid`, `is_private
 
 ## Embedding Provider Options
 
-Always confirm `provider`, `model`, and `dimension` with the user before writing a SimilaritySearch tool config. Do not default.
+Take `provider` and `model` from the user's request; ask only if they are not stated. Take `dimension` from the index (`vector.dimensions`). Do not pick a provider or model that neither the request nor the index implies.
 
 ### OpenAI (`provider: "openai"`)
 
