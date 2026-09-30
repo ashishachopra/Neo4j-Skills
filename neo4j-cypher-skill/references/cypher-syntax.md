@@ -442,7 +442,7 @@ elementId(n)         // STRING internal ID [replaces deprecated id(n) — pre-20
 | `FOREACH (x IN list \| write-clause)` | Side-effect writes only — no RETURN needed |
 | `UNWIND list AS x` | Need to read, filter, or return list items |
 
-Variables bound inside `FOREACH` are not visible after it; the outer query can still continue (`MATCH ... FOREACH (...) RETURN n.f` is valid). Use `UNWIND` when you need to read, filter or return the list items.
+Variables bound inside `FOREACH` not visible after it; `RETURN`/`WITH` may follow (`MATCH ... FOREACH (...) RETURN n.f` valid). Use `UNWIND` to read, filter, return items.
 
 ```cypher
 // FOREACH -- side-effect only
@@ -490,7 +490,7 @@ UNION ALL
 MATCH (n:Contractor) RETURN n.name AS name, n.email AS email
 ```
 
-`SHOW` commands can be used as branches of a `UNION` on 2026.05+ (`SHOW INDEXES YIELD name RETURN name UNION SHOW CONSTRAINTS YIELD name RETURN name` runs on 2026.09). Never repeat `CYPHER 25` on subsequent branches.
+`SHOW` commands can be `UNION` branches on 2026.05+ (`SHOW INDEXES YIELD name RETURN name UNION SHOW CONSTRAINTS YIELD name RETURN name`). Never repeat `CYPHER 25` on subsequent branches.
 
 ---
 

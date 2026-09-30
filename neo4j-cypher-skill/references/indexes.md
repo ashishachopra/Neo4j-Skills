@@ -136,7 +136,7 @@ CREATE LOOKUP INDEX rel_type_lookup  FOR ()-[r]-() ON EACH type(r)
 
 Enforce data integrity AND create an implicit **RANGE index** (UNIQUE, NODE KEY). Prefer constraint over bare index when uniqueness is required.
 
-**Edition notes**: UNIQUE (node and relationship, single or composite) is available in all editions. NOT NULL (existence), NODE KEY, RELATIONSHIP KEY and property type (`IS ::`) require **Enterprise Edition** (Community returns `Property existence constraint is not supported in community edition`).
+**Edition notes**: UNIQUE (node/relationship, single/composite) in all editions. NOT NULL (existence), NODE KEY, RELATIONSHIP KEY, property type (`IS ::`) require **Enterprise Edition** (Community: `Property existence constraint is not supported in community edition`).
 
 ```cypher
 // UNIQUE node — creates implicit RANGE index; MERGE acquires lock
