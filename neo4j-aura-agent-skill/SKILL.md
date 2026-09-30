@@ -209,7 +209,7 @@ Minimum required config:
 uv run python3 scripts/manage_agent.py create --config agent-config.json
 ```
 
-Response includes `id` (save as `AURA_AGENT_ID`), `endpoint_link`, `mcp_endpoint_link`.
+Response includes `id` (save as `AURA_AGENT_ID`) and `endpoint_link`. It has no MCP URL: when `is_mcp_enabled` is true, the MCP endpoint is `https://mcp.neo4j.io/agent?project_id=<project_id>&agent_id=<agent_id>` — see `references/REFERENCE.md → External Access`.
 
 ---
 
