@@ -159,8 +159,7 @@ neo4j-agent-memory mcp serve --password <pw>
 # stdio (default — Claude Desktop, Claude Code)
 neo4j-agent-memory mcp serve --password <pw>
 
-# Streamable HTTP (network deployment; endpoint is /mcp/)
-# `--transport sse` is deprecated: it now serves Streamable HTTP with a warning
+# Streamable HTTP (network; endpoint /mcp/). `--transport sse` deprecated — serves Streamable HTTP with warning
 neo4j-agent-memory mcp serve --transport http --port 8080 --password <pw>
 
 # Core profile — fewer tools, less context overhead
