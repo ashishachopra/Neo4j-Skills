@@ -20,6 +20,8 @@ Fetch and read each source. Extract: new syntax, deprecated APIs, removed featur
 - https://github.com/neo4j/neo4j/wiki/Changelog — scan entries from the last 30 days
 - https://github.com/neo4j/graph-data-science/releases - scan entries from the last 30 days
 - https://github.com/neo4j/graph-data-science-client/releases - scan entries from the last 30 days
+- https://github.com/neo4j/neo4j-graphrag-python/releases - scan entries from the last 30 days (CHANGELOG: https://github.com/neo4j/neo4j-graphrag-python/blob/main/CHANGELOG.md)
+- https://registry.npmjs.org/@neo4j-nvl/base - Neo4j Visualization Library (@neo4j-nvl/*): `dist-tags` + newest `versions` entries (no GitHub releases feed; source repo not public)
 
 **Deprecation and removal pages:**
 - https://neo4j.com/docs/cypher-manual/current/deprecations-additions-removals-compatibility/
@@ -60,6 +62,8 @@ Doc roots:
 - GDS: https://neo4j.com/docs/graph-data-science/current/
 - GDS Python client: https://neo4j.com/docs/graph-data-science-client/current/
 - GraphQL: https://neo4j.com/docs/graphql/current/
+- neo4j-graphrag: https://neo4j.com/docs/neo4j-graphrag-python/current/ (CHANGELOG: https://github.com/neo4j/neo4j-graphrag-python/blob/main/CHANGELOG.md)
+- NVL: https://neo4j.com/docs/nvl/current/ (npm: https://www.npmjs.com/package/@neo4j-nvl/base)
 - Aura: https://neo4j.com/docs/aura/current/
 - Kafka connector: https://neo4j.com/docs/kafka/current/
 - Spark connector: https://neo4j.com/docs/spark/current/
