@@ -149,7 +149,7 @@ Read `schema.json` before Step 5.
 
 Before designing tools, read [references/authoring-guide.md](references/authoring-guide.md).
 
-**Answer these from the user's request and the schema where you can, and ask what is still unclear. Do NOT guess tool types or parameters.** If the request already states the use cases, tools, or embedding details, use them and move on.
+**Take answers from request and schema; ask about gaps. Do NOT guess tool types or parameters.**
 
 1. "What questions should this agent answer?"
 2. "Which nodes or relationships matter most?" — match against `schema.json → node_props`
@@ -157,7 +157,7 @@ Before designing tools, read [references/authoring-guide.md](references/authorin
 4. "Any counting, grouping, or date-range questions?" → Text2Cypher
 5. "Search for semantically similar text?" → check `schema.json → metadata → vector_index`
    - No VECTOR index found: inform user; skip SimilaritySearch; delegate to `neo4j-vector-index-skill` first
-   - VECTOR index found: use provider and model from the request if given; otherwise ask — **"Which embedding provider and model should be used?"** See supported models in `references/REFERENCE.md → Embedding Provider Options`. Take the dimension from the index (`vector.dimensions`). Do NOT guess a provider or model that neither the request nor the index implies.
+   - VECTOR index found: provider/model from request, else ask (**"Which embedding provider and model?"**); supported models → `references/REFERENCE.md → Embedding Provider Options`. Dimension from index (`vector.dimensions`). Do NOT guess provider/model.
 
 Tool selection:
 
@@ -169,7 +169,7 @@ Tool selection:
 
 **CypherTemplate parameters**: for each parameter, read `aura_data_type` from `schema.json → node_props` or `rel_props` and use it as `data_type`. If the property has `low_cardinality: true`, the parameter `description` should list the valid values — copy them from the `values` array in `schema.json`. Example: `"description": "Agreement type to filter by. Valid values: \"Distributor Agreement\", \"License Agreement\", \"NDA\""`. Properties with `has_fulltext_index: true` are especially likely to be filter targets and should include valid values when low cardinality.
 
-**SimilaritySearch configuration** — take each value from the request if stated, from the index where discoverable (`dimension`), and ask for what is still missing before drafting the tool config:
+**SimilaritySearch configuration** — values from request; `dimension` from index; ask about gaps; then draft tool config:
 
 | Field | What to ask | Source |
 |---|---|---|
@@ -181,7 +181,7 @@ Tool selection:
 
 **Signals inventory**: for each label or relationship that appears in a tool or the user's stated questions, write a signal block in the system prompt. See `references/authoring-guide.md → Signals inventory` for the template and rules.
 
-Draft config JSON → show to user for review → confirm → proceed to Step 6. If the user asked you to go ahead without review, or the request already specifies the full config, state the config and proceed.
+Draft config JSON → show to user for review → confirm → proceed to Step 6. Skip review if user said go ahead or request gives full config; state config, proceed.
 
 ---
 
@@ -204,12 +204,12 @@ Minimum required config:
 }
 ```
 
-**Show config to user and confirm before running (skip the pause if the user already asked you to create the agent with these details):**
+**Show config to user and confirm before running (skip if user already asked to create with these details):**
 ```bash
 uv run python3 scripts/manage_agent.py create --config agent-config.json
 ```
 
-Response includes `id` (save as `AURA_AGENT_ID`) and `endpoint_link`. It has no MCP URL: when `is_mcp_enabled` is true, the MCP endpoint is `https://mcp.neo4j.io/agent?project_id=<project_id>&agent_id=<agent_id>` — see `references/REFERENCE.md → External Access`.
+Response includes `id` (save as `AURA_AGENT_ID`), `endpoint_link`. No MCP URL in response; if `is_mcp_enabled`: `https://mcp.neo4j.io/agent?project_id=<project_id>&agent_id=<agent_id>` — see `references/REFERENCE.md → External Access`.
 
 ---
 
