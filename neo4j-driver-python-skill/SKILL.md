@@ -35,7 +35,7 @@ pip install neo4j-rust-ext         # optional: 3–10× faster serialization, sa
 
 **Python >=3.10 required** for v6.x. Python 3.14 supported [6.1+]. Pandas 3 and PyArrow 23/24 supported [6.2+]. PyArrow 25 and Bolt 6.1 `uuid.UUID` values supported [6.3+]; driver-created SSL contexts honour `SSLKEYLOGFILE` [6.3+].
 
-Neo4j 2026.08+ `UUID` properties require `neo4j>=6.3` to round-trip as `uuid.UUID`. Storing UUID properties needs the block store format (Enterprise): on Community (aligned format) the write fails with `storing properties of type UUID is not supported in aligned store format`; store `str(uuid)` there.
+Neo4j 2026.08+ `UUID` properties require `neo4j>=6.3` to round-trip as `uuid.UUID`. Storing UUID needs block store format (Enterprise); Community (aligned format) fails: `storing properties of type UUID is not supported in aligned store format` — store `str(uuid)`.
 
 ---
 
@@ -305,7 +305,7 @@ record.get("name", "Unknown")
 d = record.data()            # dict — Node → dict of properties, Relationship → tuple, Path → list; temporal values stay driver objects
 ```
 
-`record.data()` converts `Node` → `dict` of its properties, `Relationship` → `(start_props, type, end_props)` tuple (the relationship's own properties are dropped), and `Path` → list, so `json.dumps` accepts them but labels, element IDs and relationship properties are lost. `neo4j.time.Date`/`Time`/`DateTime` values stay driver objects and make `json.dumps` raise `TypeError`. Project the scalar fields you need in Cypher (and `toString()` temporals) instead of returning whole entities.
+`record.data()`: `Node` → `dict` of properties, `Relationship` → `(start_props, type, end_props)` tuple (own properties dropped), `Path` → list. `json.dumps` accepts these but loses labels, element IDs, relationship properties. `neo4j.time.Date`/`Time`/`DateTime` stay driver objects → `json.dumps` raises `TypeError`. Project needed scalars in Cypher (`toString()` temporals); don't return whole entities.
 
 ```python
 # ❌ raises TypeError on json.dumps (temporal value)
@@ -393,7 +393,7 @@ Full performance patterns → [references/performance.md](references/performance
 | Sync driver inside asyncio | Use `AsyncGraphDatabase` — sync blocks event loop |
 | Async driver created per request | Singleton — create once at startup |
 | Leaked sessions | `with driver.session(...) as session` always |
-| `json.dumps(record.data())` with temporal values | `TypeError`: `toString()` them in Cypher or convert explicitly. Whole nodes/relationships serialize but lose labels, IDs and relationship properties — project scalars |
+| `json.dumps(record.data())` with temporal values | `TypeError` — `toString()` in Cypher or convert. Whole nodes/relationships serialize but lose labels, IDs, relationship properties — project scalars |
 | `result["name"]` on `EagerResult` | Index `result.records[0]["name"]` or unpack `records, _, _ = ...` |
 | `Result.single()` returns None for 0 results | It raises — use `single(strict=False)` |
 | `@unit_of_work` on lambda | Use named function |
