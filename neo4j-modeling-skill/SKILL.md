@@ -141,7 +141,7 @@ Promote relationship to intermediate node when:
 |---|---|---|
 | Table row | Node | One label per table (add more as needed) |
 | Column (scalar) | Node property | |
-| Primary key | Uniqueness constraint property | Prefer a domain-qualified name (`tmdbId`, `personId`) over bare `id`; bare `id` works but is less clear |
+| Primary key | Uniqueness constraint property | Prefer `tmdbId`/`personId` over bare `id` |
 | Foreign key | Relationship | Direction: from dependent → referenced |
 | Many-to-many junction table | Intermediate node | Especially if junction has own columns |
 | Junction table (no own columns) | Direct relationship | Simpler; upgrade to intermediate node later |
@@ -261,7 +261,7 @@ Do NOT use an index until state = `ONLINE`.
 
 ### Vector / Embedding Property Modeling
 
-For long text split into chunks, store embeddings on dedicated `:Chunk` nodes rather than on business nodes. Short text (names, titles, descriptions) can carry its embedding on the entity node itself:
+Prefer dedicated `:Chunk` nodes for long text; short-text embeddings can live on the entity:
 
 ```
 (:Document)-[:HAS_CHUNK]->(c:Chunk {text: "...", embedding: [...]})
