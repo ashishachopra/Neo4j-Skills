@@ -35,7 +35,7 @@ pip install neo4j-rust-ext         # optional: 3–10× faster serialization, sa
 
 **Python >=3.10 required** for v6.x. Python 3.14 supported [6.1+]. Pandas 3 and PyArrow 23/24 supported [6.2+]. PyArrow 25 and Bolt 6.1 `uuid.UUID` values supported [6.3+]; driver-created SSL contexts honour `SSLKEYLOGFILE` [6.3+].
 
-Neo4j 2026.08+ `UUID` properties require `neo4j>=6.3` to round-trip as `uuid.UUID`.
+Neo4j 2026.08+ `UUID` properties require `neo4j>=6.3` to round-trip as `uuid.UUID`. Storing UUID properties needs the block store format (Enterprise): on Community (aligned format) the write fails with `storing properties of type UUID is not supported in aligned store format`; store `str(uuid)` there.
 
 ---
 
@@ -302,19 +302,19 @@ record["name"]               # by key — KeyError if absent
 record[0]                    # by index
 record.get("name")           # None for absent key OR graph null
 record.get("name", "Unknown")
-d = record.data()            # dict — values still driver objects for Node/Rel/temporal types
+d = record.data()            # dict — Node → dict of properties, Relationship → tuple, Path → list; temporal values stay driver objects
 ```
 
-`record.data()` is **not JSON-safe** if result contains `Node`, `Relationship`, `Path`, or `neo4j.time.*` values. Project scalar fields in Cypher instead of returning whole nodes.
+`record.data()` converts `Node` → `dict` of its properties, `Relationship` → `(start_props, type, end_props)` tuple (the relationship's own properties are dropped), and `Path` → list, so `json.dumps` accepts them but labels, element IDs and relationship properties are lost. `neo4j.time.Date`/`Time`/`DateTime` values stay driver objects and make `json.dumps` raise `TypeError`. Project the scalar fields you need in Cypher (and `toString()` temporals) instead of returning whole entities.
 
 ```python
-# ❌ raises TypeError on json.dumps
-records, _, _ = driver.execute_query("MATCH (p:Person) RETURN p", database_="neo4j")
+# ❌ raises TypeError on json.dumps (temporal value)
+records, _, _ = driver.execute_query("MATCH (p:Person) RETURN p.name AS name, p.created_at AS created_at", database_="neo4j")
 json.dumps(records[0].data())
 
 # ✅ project scalars
 records, _, _ = driver.execute_query(
-    "MATCH (p:Person) RETURN p.name AS name, p.age AS age", database_="neo4j")
+    "MATCH (p:Person) RETURN p.name AS name, p.age AS age, toString(p.created_at) AS created_at", database_="neo4j")
 json.dumps(records[0].data())   # safe
 ```
 
@@ -393,7 +393,7 @@ Full performance patterns → [references/performance.md](references/performance
 | Sync driver inside asyncio | Use `AsyncGraphDatabase` — sync blocks event loop |
 | Async driver created per request | Singleton — create once at startup |
 | Leaked sessions | `with driver.session(...) as session` always |
-| `json.dumps(record.data())` with node/temporal | Project scalars in Cypher or convert explicitly |
+| `json.dumps(record.data())` with temporal values | `TypeError`: `toString()` them in Cypher or convert explicitly. Whole nodes/relationships serialize but lose labels, IDs and relationship properties — project scalars |
 | `result["name"]` on `EagerResult` | Index `result.records[0]["name"]` or unpack `records, _, _ = ...` |
 | `Result.single()` returns None for 0 results | It raises — use `single(strict=False)` |
 | `@unit_of_work` on lambda | Use named function |
