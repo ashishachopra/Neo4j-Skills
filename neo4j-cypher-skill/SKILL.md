@@ -290,9 +290,9 @@ ORDER BY collaborations DESC
 | `UNWIND list AS x WHERE x>5` | `UNWIND list AS x WITH x WHERE x>5` |
 | `least(a,b)` / `greatest(a,b)` | `CASE WHEN a<b THEN a ELSE b END` |
 | `-- comment` | `// comment` |
-| `shortestPath((a)-[*]->(b))` | `SHORTEST 1 (a)(()-[]->()){1,}(b)` |
+| `shortestPath((a)-[*]->(b))` (still valid) | Prefer `SHORTEST 1 (a)(()-[]->()){1,}(b)` |
 | `id(n)` | `elementId(n)` |
-| `[:REL*1..5]` | `(()-[:REL]->()){1,5}` |
+| `[:REL*1..5]` (still valid) | Prefer `(()-[:REL]->()){1,5}` |
 | `CALL { WITH x ... }` | `CALL (x) { ... }` |
 | `COLLECT { (a)-[:R]->(b) }` | `COLLECT { MATCH ... RETURN b }` |
 | `SET n = {k:v}` partial update | `SET n += {k:v}` |

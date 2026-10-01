@@ -23,7 +23,7 @@ Create syntax:
 CREATE RANGE INDEX    name IF NOT EXISTS FOR (n:Label) ON (n.prop)
 CREATE TEXT INDEX     name IF NOT EXISTS FOR (n:Label) ON (n.prop)
 CREATE POINT INDEX    name IF NOT EXISTS FOR (n:Label) ON (n.prop)
-CREATE COMPOSITE INDEX name IF NOT EXISTS FOR (n:Label) ON (n.p1, n.p2)
+CREATE INDEX          name IF NOT EXISTS FOR (n:Label) ON (n.p1, n.p2)
 CREATE FULLTEXT INDEX  name IF NOT EXISTS FOR (n:Label|OtherLabel) ON EACH [n.p1, n.p2]
 // Relationship index:
 CREATE RANGE INDEX    name IF NOT EXISTS FOR ()-[r:TYPE]-() ON (r.prop)
@@ -442,7 +442,7 @@ elementId(n)         // STRING internal ID [replaces deprecated id(n) — pre-20
 | `FOREACH (x IN list \| write-clause)` | Side-effect writes only — no RETURN needed |
 | `UNWIND list AS x` | Need to read, filter, or return list items |
 
-`FOREACH` cannot be followed by `RETURN` or `WITH`. When in doubt, use `UNWIND`.
+Variables bound inside `FOREACH` not visible after it; `RETURN`/`WITH` may follow (`MATCH ... FOREACH (...) RETURN n.f` valid). Use `UNWIND` to read, filter, return items.
 
 ```cypher
 // FOREACH -- side-effect only
@@ -490,7 +490,7 @@ UNION ALL
 MATCH (n:Contractor) RETURN n.name AS name, n.email AS email
 ```
 
-`SHOW` commands cannot be combined with `UNION`. Never repeat `CYPHER 25` on subsequent branches.
+`SHOW` commands can be `UNION` branches on 2026.05+ (`SHOW INDEXES YIELD name RETURN name UNION SHOW CONSTRAINTS YIELD name RETURN name`). Never repeat `CYPHER 25` on subsequent branches.
 
 ---
 
