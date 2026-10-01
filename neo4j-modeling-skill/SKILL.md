@@ -9,7 +9,7 @@ description: Design, review, and refactor Neo4j graph data models. Use when choo
   Does NOT handle Spring Data Neo4j entity mapping — use neo4j-spring-data-skill.
   Does NOT handle GraphQL type definitions — use neo4j-graphql-skill.
   Does NOT handle data import — use neo4j-import-skill.
-version: 1.0.6
+version: 1.0.7
 allowed-tools: WebFetch Bash
 ---
 
@@ -120,9 +120,10 @@ Use when a relationship needs its own properties, connects >2 entities, or is in
 ```cypher
 // Find colleagues who overlapped at same company
 MATCH (p1:Person)-[:WORKED_AT]->(e1:Employment)-[:AT]->(c:Company)<-[:AT]-(e2:Employment)<-[:WORKED_AT]-(p2:Person)
-WHERE p1 <> p2
-  AND e1.startDate <= e2.endDate AND e2.startDate <= e1.endDate
-RETURN p1.name, p2.name, c.name
+WHERE elementId(p1) < elementId(p2)
+  AND e1.startDate <= coalesce(e2.endDate, date())
+  AND e2.startDate <= coalesce(e1.endDate, date())
+RETURN DISTINCT p1.name, p2.name, c.name
 ```
 
 Promote relationship to intermediate node when:
