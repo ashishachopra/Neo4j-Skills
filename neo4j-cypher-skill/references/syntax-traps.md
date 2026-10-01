@@ -24,7 +24,7 @@ Load this when debugging a syntax error or validating a query before returning i
 | `CALL { WITH x ... }` | `CALL (x) { ... }` — importing WITH is deprecated |
 | `apoc.coll.sort(list)` | `coll.sort(list)` — native Cypher 25 built-in |
 | `n.dateProp >= date('2025-01-01')` on ZONED DATETIME | Use `.year` accessor or `datetime()` literal |
-| `duration.between(d1,d2).inDays` | `duration.between(d1,d2).days` — `.inDays` does not exist |
+| `duration.between(d1,d2).inDays` (error) or `.days` for total days | `duration.inDays(d1,d2).days` — total days; `.days` alone is component (Jan 1 → Mar 15 = 14) |
 | `WHERE n.x = null` | `WHERE n.x IS NULL` |
 | `WHERE n.x <> null` | `WHERE n.x IS NOT NULL` |
 | `MATCH (n:A) MATCH (m:A)` without join predicate | Causes CartesianProduct — add `WHERE` join condition |

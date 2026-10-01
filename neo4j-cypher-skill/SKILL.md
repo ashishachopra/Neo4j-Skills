@@ -7,7 +7,7 @@ description: Generates, optimizes, and validates Cypher 25 queries for Neo4j 202
   Does NOT handle driver migration or API changes — use neo4j-migration-skill.
   Does NOT cover DB administration or server ops — use neo4j-cli-tools-skill.
 compatibility: Neo4j >= 2025.01 (safe baseline); Cypher 25
-version: 1.0.25
+version: 1.0.26
 ---
 
 ## When to Use
@@ -407,7 +407,7 @@ Full anti-patterns → [references/performance.md](references/performance.md)
 - Long-running query progress [2026.03]: `SHOW TRANSACTIONS YIELD currentQuery, status, currentQueryProgress`
 - DateTime mismatch: `ZONED DATETIME >= date(...)` → 0 rows; use `datetime()` or `.year`
 - `Z` suffix ≠ UTC timezone: ISO strings with `Z` are stored as a UTC-offset, not the UTC zone — range queries across `Z` and `UTC` stored values return 0 rows. Coerce on write: `datetime({datetime: datetime($isoStr), timezone: 'UTC'})`
-- Duration: `.inDays`/`.inMonths` don't exist; use `.days`/`.months`
+- Duration: `duration.between(d1,d2).days` = days *component* (Jan 1 → Mar 15: 14), not total. Total days: `duration.inDays(d1,d2).days` (73); same for `inMonths`, `inSeconds`. `.inDays` is not an accessor on duration values
 - `Cannot merge node using null property value`: MERGE key resolved to null — validate params first
 - `IndexNotFoundError`: `SHOW INDEXES YIELD name, state WHERE state <> 'ONLINE'`
 

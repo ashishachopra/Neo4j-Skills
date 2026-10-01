@@ -555,7 +555,7 @@ date.truncate('month', date())        // first day of current month
 
 Type rule: `ZONED DATETIME` properties must be compared with `datetime()` literals, not `date()` — mixing types returns 0 rows.
 
-Duration components: `.years`, `.months`, `.days`, `.hours`, `.minutes`, `.seconds` — `.inDays` / `.inMonths` / `.inSeconds` do NOT exist.
+Duration components: `.years`, `.months`, `.days`, `.hours`, `.minutes`, `.seconds`. `duration.between(d1,d2).days` = days component after whole months: `2026-01-01` → `2026-03-15` gives `14`, not `73`. **Total** days: `duration.inDays(d1,d2).days` (`73`); `duration.inMonths`, `duration.inSeconds` same. `duration.between(d1,d2).inDays` errors.
 
 ---
 
