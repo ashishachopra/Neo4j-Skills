@@ -7,7 +7,7 @@ description: Manages Neo4j Aura Agents via the v2beta1 REST API — create, list
   organization/project scoping, tool parameter schemas, and InvokeAgentResponse format.
   Does NOT cover AuraDB instance provisioning — use neo4j-aura-provisioning-skill.
   Does NOT cover vector index creation — use neo4j-vector-index-skill.
-version: 1.0.3
+version: 1.0.4
 allowed-tools: Bash WebFetch  
 ---
 
@@ -149,7 +149,7 @@ Read `schema.json` before Step 5.
 
 Before designing tools, read [references/authoring-guide.md](references/authoring-guide.md).
 
-**Ask the user these questions. Do NOT guess tool types or parameters.**
+**Take answers from request and schema; ask about gaps. Do NOT guess tool types or parameters.**
 
 1. "What questions should this agent answer?"
 2. "Which nodes or relationships matter most?" — match against `schema.json → node_props`
@@ -157,7 +157,7 @@ Before designing tools, read [references/authoring-guide.md](references/authorin
 4. "Any counting, grouping, or date-range questions?" → Text2Cypher
 5. "Search for semantically similar text?" → check `schema.json → metadata → vector_index`
    - No VECTOR index found: inform user; skip SimilaritySearch; delegate to `neo4j-vector-index-skill` first
-   - VECTOR index found: ask the user — **"Which embedding provider and model should be used? What output dimension?"** See supported models in `references/REFERENCE.md → Embedding Provider Options`. Do NOT guess or default.
+   - VECTOR index found: provider/model from request, else ask (**"Which embedding provider and model?"**); supported models → `references/REFERENCE.md → Embedding Provider Options`. Dimension from index (`vector.dimensions`). Do NOT guess provider/model.
 
 Tool selection:
 
@@ -167,21 +167,21 @@ Tool selection:
 | Semantic text search | `similaritySearch` |
 | Aggregation, counting, open-ended | `text2cypher` |
 
-**CypherTemplate parameters**: for each parameter, read `aura_data_type` from `schema.json → node_props` or `rel_props` and use it as `data_type`. If the property has `low_cardinality: true`, the parameter `description` MUST list the valid values — copy them from the `values` array in `schema.json`. Example: `"description": "Agreement type to filter by. Valid values: \"Distributor Agreement\", \"License Agreement\", \"NDA\""`. Properties with `has_fulltext_index: true` are especially likely to be filter targets and must include valid values when low cardinality.
+**CypherTemplate parameters**: for each parameter, read `aura_data_type` from `schema.json → node_props` or `rel_props` and use it as `data_type`. If the property has `low_cardinality: true`, the parameter `description` should list the valid values — copy them from the `values` array in `schema.json`. Example: `"description": "Agreement type to filter by. Valid values: \"Distributor Agreement\", \"License Agreement\", \"NDA\""`. Properties with `has_fulltext_index: true` are especially likely to be filter targets and should include valid values when low cardinality.
 
-**SimilaritySearch configuration** — ask the user for all three before drafting the tool config:
+**SimilaritySearch configuration** — values from request; `dimension` from index; ask about gaps; then draft tool config:
 
 | Field | What to ask | Source |
 |---|---|---|
-| `provider` | "openai" or "vertexai"? | User confirms |
-| `model` | Which model? | User picks from `references/REFERENCE.md → Embedding Provider Options` |
+| `provider` | "openai" or "vertexai"? | Request, else user confirms |
+| `model` | Which model? | Request, else user picks from `references/REFERENCE.md → Embedding Provider Options` |
 | `dimension` | What output dimension? | Required if model is configurable (see table); fixed models use the table value |
 
 `index`: use `name` from `schema.json → metadata → vector_index` where `state = ONLINE`. `dimension` must match `vector.dimensions` in the same index entry.
 
 **Signals inventory**: for each label or relationship that appears in a tool or the user's stated questions, write a signal block in the system prompt. See `references/authoring-guide.md → Signals inventory` for the template and rules.
 
-Draft config JSON → show to user for review → confirm → proceed to Step 6.
+Draft config JSON → show to user for review → confirm → proceed to Step 6. Skip review if user said go ahead or request gives full config; state config, proceed.
 
 ---
 
@@ -204,12 +204,12 @@ Minimum required config:
 }
 ```
 
-**Show config to user and confirm before running:**
+**Show config to user and confirm before running (skip if user already asked to create with these details):**
 ```bash
 uv run python3 scripts/manage_agent.py create --config agent-config.json
 ```
 
-Response includes `id` (save as `AURA_AGENT_ID`), `endpoint_link`, `mcp_endpoint_link`.
+Response includes `id` (save as `AURA_AGENT_ID`), `endpoint_link`. No MCP URL in response; if `is_mcp_enabled`: `https://mcp.neo4j.io/agent?project_id=<project_id>&agent_id=<agent_id>` — see `references/REFERENCE.md → External Access`.
 
 ---
 
