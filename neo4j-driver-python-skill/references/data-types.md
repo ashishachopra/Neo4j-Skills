@@ -12,7 +12,8 @@
 | `dict` | Map |
 | `None` | null |
 | `datetime.date` | Date |
-| `datetime.datetime` | DateTime |
+| `datetime.datetime` (naive, no `tzinfo`) | LocalDateTime |
+| `datetime.datetime` (timezone-aware) | DateTime (zoned) |
 | `datetime.time` | Time |
 | `datetime.timedelta` | Duration |
 | `uuid.UUID` | `UUID` [driver 6.3+, Neo4j 2026.08+; earlier: pass `str(uuid)`] |
@@ -68,7 +69,11 @@ str(dt)                     # ISO 8601 string — JSON-safe
 # Pass Python datetime as a parameter — driver converts automatically
 from datetime import datetime, timezone
 driver.execute_query("CREATE (e:Event {at: $ts})", ts=datetime.now(timezone.utc), database_="neo4j")
+```
 
+Naive `datetime` → `LOCAL DATETIME`; never matches or compares with stored zoned values (`WHERE e.at >= $naive` → 0 rows). Pass timezone-aware datetimes (`datetime.now(timezone.utc)`) for zoned `DateTime` properties.
+
+```python
 # Duration — access .days / .months (not .inDays / .inMonths)
 dur = record["tenure"]      # neo4j.time.Duration
 dur.days
@@ -77,10 +82,10 @@ dur.months
 
 ## JSON Serialization
 
-`record.data()` returns a `dict` but `Node`, `Relationship`, `Path`, and `neo4j.time.*` values are still driver objects — not JSON-safe.
+`record.data()` returns `dict`: `Node` → `dict` of properties, `Relationship` → `(start_props, type, end_props)` tuple (own properties dropped), `Path` → list. Serializes but loses labels, IDs, relationship properties. `neo4j.time.Date`, `Time`, `DateTime` stay driver objects → `json.dumps` raises `TypeError`.
 
 ```python
-# ❌ Raises TypeError if result contains node/rel/temporal
+# ❌ Raises TypeError if the result contains temporal values
 json.dumps(records[0].data())
 
 # ✅ Project scalars in Cypher
